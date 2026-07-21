@@ -1,0 +1,26 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+
+  # Prometheus se surveille lui-même
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Métriques des containers Docker (CPU, RAM, réseau)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # Métriques MySQL (connexions, requêtes lentes, etc.)
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['mysqld-exporter:9104']
+
+  # Métriques de l'API Laravel (temps de réponse, requêtes/routes, erreurs)
+  - job_name: 'laravel-api'
+    metrics_path: /prometheus
+    static_configs:
+      - targets: ['back:8000']
