@@ -1,0 +1,47 @@
+# Dépendances (installées pendant le build de l'image)
+vendor/
+node_modules/
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environnement / secrets
+.env
+.env.*
+!.env.example
+
+# Cache & fichiers générés par Laravel
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+bootstrap/cache/*
+!storage/logs/.gitkeep
+!storage/framework/cache/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/views/.gitkeep
+!bootstrap/cache/.gitkeep
+
+# Tests / CI
+tests/
+.phpunit.result.cache
+phpunit.xml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Divers
+*.log
+.DS_Store
+Thumbs.db
+README.md

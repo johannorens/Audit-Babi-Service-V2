@@ -1,6 +1,6 @@
 FROM php:8.4-cli
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         unzip \
         libzip-dev \
@@ -18,6 +18,12 @@ RUN composer install --no-interaction --no-scripts --no-autoloader --no-dev --pr
 COPY . .
 RUN composer dump-autoload --optimize --no-dev
 
+RUN chown -R www-data:www-data /var/www/html
+USER www-data
+
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD php -r "exit(@file_get_contents('http://127.0.0.1:'.(getenv('PORT') ?: 8000)) === false ? 1 : 0);"
 
 CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
