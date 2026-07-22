@@ -89,7 +89,8 @@ function AdminDashboard() {
   }, [])
 
   const stats = data?.stats
-  const aValider = data?.a_valider ?? []
+  const aValider = data?.a_valider?.data ?? []
+  const aValiderTotal = data?.a_valider?.total ?? aValider.length
 
   const chartParMois = moisLabels.map((_, index) => {
     const entry = data?.reservations_par_mois.find((m) => Number(m.mois) === index + 1)
@@ -123,7 +124,7 @@ function AdminDashboard() {
       active="Tableau de bord"
       title="Tableau de bord"
       subtitle={`Vue d'ensemble de la plateforme · ${moisNoms[moisCourant]} ${new Date().getFullYear()}`}
-      validationsCount={aValider.length}
+      validationsCount={aValiderTotal}
       headerActions={
         <button className="bg-white border border-gray-200 text-babi-dark px-5 py-2.5 rounded-full font-semibold hover:border-babi-green transition-colors">
           Exporter
@@ -192,9 +193,9 @@ function AdminDashboard() {
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
             <h2 className="font-bold text-babi-dark">À valider</h2>
-            {aValider.length > 0 && (
+            {aValiderTotal > 0 && (
               <span className="bg-babi-green text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {aValider.length}
+                {aValiderTotal}
               </span>
             )}
           </div>

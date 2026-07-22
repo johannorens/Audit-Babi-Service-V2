@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../components/AdminLayout'
+import Pagination from '../components/Pagination'
 import { apiGetAdminUtilisateurs, apiDeleteUtilisateur, apiDeleteAdminPrestataire } from '../services/api'
 
 const TrashIcon = () => (
@@ -44,19 +45,34 @@ const statutLabels = {
 function UtilisateursAdmin() {
   const [utilisateurs, setUtilisateurs] = useState([])
   const [prestataires, setPrestataires] = useState([])
+  const [metaUtilisateurs, setMetaUtilisateurs] = useState(null)
+  const [metaPrestataires, setMetaPrestataires] = useState(null)
+  const [pageUtilisateurs, setPageUtilisateurs] = useState(1)
+  const [pagePrestataires, setPagePrestataires] = useState(1)
   const [loading, setLoading]           = useState(true)
   const [tab, setTab]                   = useState('clients')
   const [search, setSearch]             = useState('')
 
   useEffect(() => {
-    apiGetAdminUtilisateurs().then((res) => {
+    setLoading(true)
+    apiGetAdminUtilisateurs(pageUtilisateurs, pagePrestataires).then((res) => {
       if (res.ok) {
-        setUtilisateurs(Array.isArray(res.data.utilisateurs) ? res.data.utilisateurs : [])
-        setPrestataires(Array.isArray(res.data.prestataires) ? res.data.prestataires : [])
+        const u = res.data.utilisateurs
+        const p = res.data.prestataires
+
+        setUtilisateurs(Array.isArray(u) ? u : u?.data ?? [])
+        setMetaUtilisateurs(Array.isArray(u) ? null : u ? {
+          current_page: u.current_page, last_page: u.last_page, total: u.total, per_page: u.per_page,
+        } : null)
+
+        setPrestataires(Array.isArray(p) ? p : p?.data ?? [])
+        setMetaPrestataires(Array.isArray(p) ? null : p ? {
+          current_page: p.current_page, last_page: p.last_page, total: p.total, per_page: p.per_page,
+        } : null)
       }
       setLoading(false)
     })
-  }, [])
+  }, [pageUtilisateurs, pagePrestataires])
 
   // Sépare les utilisateurs par rôle
   const clients = utilisateurs.filter((u) => u.role === 'client')
@@ -187,6 +203,7 @@ function UtilisateursAdmin() {
               </tbody>
             </table>
           )}
+          {tab === 'clients' && <Pagination meta={metaUtilisateurs} onPageChange={setPageUtilisateurs} />}
 
           {/* ── Prestataires ── */}
           {tab === 'prestataires' && (
@@ -243,6 +260,7 @@ function UtilisateursAdmin() {
               </tbody>
             </table>
           )}
+          {tab === 'prestataires' && <Pagination meta={metaPrestataires} onPageChange={setPagePrestataires} />}
 
           {/* ── Admins ── */}
           {tab === 'admins' && (
@@ -280,6 +298,7 @@ function UtilisateursAdmin() {
               </tbody>
             </table>
           )}
+          {tab === 'admins' && <Pagination meta={metaUtilisateurs} onPageChange={setPageUtilisateurs} />}
 
         </div>
       </div>

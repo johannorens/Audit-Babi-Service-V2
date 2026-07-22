@@ -16,13 +16,19 @@ const publicHeaders = () => ({
   'Accept': 'application/json',
 })
 
+// Les API Resources Laravel enveloppent automatiquement le résultat dans
+// une clé "data" (que ce soit un objet unique ou une collection).
+// Ce helper dépaquette si besoin, et ne change rien si la réponse est déjà brute.
+const unwrap = (json) => (json && typeof json === 'object' && 'data' in json ? json.data : json)
+
 export const apiRegister = async (data) => {
   const res = await fetch(`${API_URL}/api/register`, {
     method: 'POST',
     headers: publicHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiLogin = async (data) => {
@@ -31,7 +37,8 @@ export const apiLogin = async (data) => {
     headers: publicHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiLogout = async () => {
@@ -46,28 +53,32 @@ export const apiGetMe = async () => {
   const res = await fetch(`${API_URL}/api/me`, {
     headers: getAuthHeaders(),
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiGetServices = async () => {
   const res = await fetch(`${API_URL}/api/services`, {
     headers: { Accept: 'application/json' },
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiGetReservations = async () => {
   const res = await fetch(`${API_URL}/api/reservations`, {
     headers: getAuthHeaders(),
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiGetService = async (id) => {
   const res = await fetch(`${API_URL}/api/services/${id}`, {
     headers: { Accept: 'application/json' },
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiCreateReservation = async (data) => {
@@ -76,7 +87,8 @@ export const apiCreateReservation = async (data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiUpdateReservation = async (id, data) => {
@@ -85,14 +97,16 @@ export const apiUpdateReservation = async (id, data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
-export const apiGetAdminDashboard = async () => {
-  const res = await fetch(`${API_URL}/api/admin/dashboard`, {
+export const apiGetAdminDashboard = async (aValiderPage = 1) => {
+  const res = await fetch(`${API_URL}/api/admin/dashboard?a_valider_page=${aValiderPage}`, {
     headers: getAuthHeaders(),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiValiderPrestataire = async (id) => {
@@ -100,7 +114,8 @@ export const apiValiderPrestataire = async (id) => {
     method: 'PATCH',
     headers: getHeaders(),
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiRejeterPrestataire = async (id) => {
@@ -108,21 +123,24 @@ export const apiRejeterPrestataire = async (id) => {
     method: 'PATCH',
     headers: getHeaders(),
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiGetCategories = async () => {
   const res = await fetch(`${API_URL}/api/categories`, {
     headers: { Accept: 'application/json' },
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiGetPrestataires = async () => {
   const res = await fetch(`${API_URL}/api/prestataires`, {
     headers: { Accept: 'application/json' },
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiCreatePrestataire = async (data) => {
@@ -131,7 +149,8 @@ export const apiCreatePrestataire = async (data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiUpdatePrestataire = async (id, data) => {
@@ -140,7 +159,8 @@ export const apiUpdatePrestataire = async (id, data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiCandidaterPrestataire = async (data) => {
@@ -149,7 +169,8 @@ export const apiCandidaterPrestataire = async (data) => {
     headers: publicHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiDeletePrestataire = async (id) => {
@@ -166,7 +187,8 @@ export const apiCreateCategorie = async (data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiUpdateCategorie = async (id, data) => {
@@ -175,7 +197,8 @@ export const apiUpdateCategorie = async (id, data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiDeleteCategorie = async (id) => {
@@ -193,7 +216,8 @@ export const apiCreateService = async (data) => {
     headers: isFormData ? getAuthHeaders() : getHeaders(),
     body: isFormData ? data : JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiUpdateService = async (id, data) => {
@@ -203,7 +227,8 @@ export const apiUpdateService = async (id, data) => {
     headers: isFormData ? getAuthHeaders() : getHeaders(),
     body: isFormData ? data : JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiDeleteService = async (id) => {
@@ -218,7 +243,8 @@ export const apiGetServiceAvis = async (id) => {
   const res = await fetch(`${API_URL}/api/services/${id}/avis`, {
     headers: { Accept: 'application/json' },
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiCreateAvis = async (data) => {
@@ -227,7 +253,8 @@ export const apiCreateAvis = async (data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
 export const apiSignalerAvis = async (id, motif) => {
@@ -236,14 +263,17 @@ export const apiSignalerAvis = async (id, motif) => {
     headers: getHeaders(),
     body: JSON.stringify({ motif }),
   })
-  return { ok: res.ok, status: res.status, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, status: res.status, data: unwrap(json) }
 }
 
-export const apiGetAdminUtilisateurs = async () => {
-  const res = await fetch(`${API_URL}/api/admin/utilisateurs`, {
-    headers: getAuthHeaders(),
-  })
-  return { ok: res.ok, data: await res.json() }
+export const apiGetAdminUtilisateurs = async (utilisateursPage = 1, prestatairesPage = 1) => {
+  const res = await fetch(
+    `${API_URL}/api/admin/utilisateurs?utilisateurs_page=${utilisateursPage}&prestataires_page=${prestatairesPage}`,
+    { headers: getAuthHeaders() }
+  )
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiDeleteUtilisateur = async (id) => {
@@ -251,7 +281,8 @@ export const apiDeleteUtilisateur = async (id) => {
     method: 'DELETE',
     headers: getHeaders(),
   })
-  return { ok: res.ok, data: res.status !== 204 ? await res.json() : null }
+  const json = res.status !== 204 ? await res.json() : null
+  return { ok: res.ok, data: json ? unwrap(json) : null }
 }
 
 export const apiDeleteAdminPrestataire = async (id) => {
@@ -259,17 +290,17 @@ export const apiDeleteAdminPrestataire = async (id) => {
     method: 'DELETE',
     headers: getHeaders(),
   })
-  return { ok: res.ok, data: res.status !== 204 ? await res.json() : null }
+  const json = res.status !== 204 ? await res.json() : null
+  return { ok: res.ok, data: json ? unwrap(json) : null }
 }
 
-export const apiGetAdminMissions = async () => {
-  const res = await fetch(`${API_URL}/api/admin/missions`, {
+export const apiGetAdminMissions = async (page = 1) => {
+  const res = await fetch(`${API_URL}/api/admin/missions?page=${page}`, {
     headers: getAuthHeaders(),
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
-
-
 
 export const apiUpdateProfil = async (data) => {
   const res = await fetch(`${API_URL}/api/profil`, {
@@ -277,7 +308,8 @@ export const apiUpdateProfil = async (data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiChangePassword = async (data) => {
@@ -286,7 +318,8 @@ export const apiChangePassword = async (data) => {
     headers: getHeaders(),
     body: JSON.stringify(data),
   })
-  return { ok: res.ok, data: await res.json() }
+  const json = await res.json()
+  return { ok: res.ok, data: unwrap(json) }
 }
 
 export const apiGetAllServices = async () => {
@@ -294,7 +327,8 @@ export const apiGetAllServices = async () => {
     headers: { Accept: 'application/json' },
   })
   if (!res.ok) throw new Error(`Erreur API ${res.status}`)
-  return res.json()
+  const json = await res.json()
+  return unwrap(json)
 }
 
 export const apiGetServiceById = async (id) => {
@@ -302,5 +336,6 @@ export const apiGetServiceById = async (id) => {
     headers: { Accept: 'application/json' },
   })
   if (!res.ok) throw new Error(`Erreur API ${res.status}`)
-  return res.json()
+  const json = await res.json()
+  return unwrap(json)
 }

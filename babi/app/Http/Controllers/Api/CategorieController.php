@@ -3,57 +3,39 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Categorie;
-use Illuminate\Http\Request;
 use App\Http\Requests\Categorie\StoreCategorieRequest;
 use App\Http\Requests\Categorie\UpdateCategorieRequest;
+use App\Http\Resources\CategorieResource;
+use App\Models\Categorie;
 
 class CategorieController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return response()->json(Categorie::all());
-
+        $categories = Categorie::with('services')->get();
+        return CategorieResource::collection($categories);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreCategorieRequest $request)
     {
         $categorie = Categorie::create($request->validated());
-        return response()->json($categorie, 201);
+        return new CategorieResource($categorie);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Categorie $categorie)
     {
-        $categorie = Categorie::with(['prestataires', 'services'])->findOrFail($id);
-        return response()->json($categorie);
+        return new CategorieResource($categorie->load('services'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCategorieRequest $request, $id)
+    public function update(UpdateCategorieRequest $request, Categorie $categorie)
     {
-        $categorie = Categorie::findOrFail($id);
         $categorie->update($request->validated());
-        return response()->json($categorie);
+        return new CategorieResource($categorie);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Categorie $categorie)
     {
-        $categorie = Categorie::findOrFail($id);
         $categorie->delete();
-        return response()->json(['message' => 'Categorie supprimée']);
+        return response()->json(['message' => 'Catégorie supprimée avec succès']);
     }
 }

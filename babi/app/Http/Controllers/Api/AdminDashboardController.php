@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $stats = [
             'total_utilisateurs' => Utilisateur::count(),
@@ -43,7 +43,7 @@ class AdminDashboardController extends Controller
         $a_valider = Prestataire::with('categorie')
             ->where('statut', 'en_attente')
             ->latest()
-            ->get();
+            ->paginate($request->input('per_page', 10), ['*'], 'a_valider_page');
 
         return response()->json([
             'stats'                 => $stats,
@@ -67,10 +67,17 @@ class AdminDashboardController extends Controller
         return response()->json(['message' => 'Prestataire rejeté']);
     }
 
-    public function utilisateurs()
+    public function utilisateurs(Request $request)
     {
-        $utilisateurs = Utilisateur::withCount('reservations')->latest()->get();
-        $prestataires = Prestataire::with('categorie')->latest()->get();
+        $perPage = $request->input('per_page', 15);
+
+        $utilisateurs = Utilisateur::withCount('reservations')
+            ->latest()
+            ->paginate($perPage, ['*'], 'utilisateurs_page');
+
+        $prestataires = Prestataire::with('categorie')
+            ->latest()
+            ->paginate($perPage, ['*'], 'prestataires_page');
 
         return response()->json([
             'utilisateurs' => $utilisateurs,
@@ -103,12 +110,12 @@ class AdminDashboardController extends Controller
         return response()->json(['message' => 'Prestataire supprimé']);
     }
 
-    public function missions()
+    public function missions(Request $request)
     {
         $missions = Reservation::with(['utilisateur', 'service.prestataire'])
             ->latest()
-            ->get()
-            ->map(fn($r) => [
+            ->paginate($request->input('per_page', 15))
+            ->through(fn ($r) => [
                 'id'          => $r->id_reservation,
                 'service'     => $r->service?->nom_service,
                 'client'      => trim(($r->utilisateur?->prenom ?? '') . ' ' . ($r->utilisateur?->nom ?? '')),

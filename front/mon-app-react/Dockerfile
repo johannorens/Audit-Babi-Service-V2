@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 FROM node:20-alpine3.20
 
 RUN apk add --no-cache su-exec
@@ -8,12 +6,15 @@ WORKDIR /app
 
 COPY package*.json ./
 
+ENV CYPRESS_INSTALL_BINARY=0
+
 RUN --mount=type=cache,target=/root/.npm \
+    npm config set registry https://registry.npmjs.org/ && \
     npm config set fetch-retries 10 && \
     npm config set fetch-retry-mintimeout 30000 && \
     npm config set fetch-retry-maxtimeout 300000 && \
     npm config set fetch-timeout 600000 && \
-    npm ci
+    npm install
 
 COPY . .
 

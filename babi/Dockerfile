@@ -2,6 +2,8 @@
 
 FROM php:8.4-cli
 
+# Utilisation d'un miroir Debian plus stable (fix problèmes réseau/MTU avec deb.debian.org)
+RUN sed -i 's|deb.debian.org|ftp.fr.debian.org|g; s|security.debian.org|ftp.fr.debian.org/debian-security|g' /etc/apt/sources.list.d/debian.sources
 
 # Dépendances système + extensions PHP
 RUN apt-get update && apt-get install -y --no-install-recommends \

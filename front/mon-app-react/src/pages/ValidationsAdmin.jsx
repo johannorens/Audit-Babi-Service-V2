@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../components/AdminLayout'
+import Pagination from '../components/Pagination'
 import {
   apiGetAdminDashboard,
   apiValiderPrestataire,
@@ -38,6 +39,8 @@ const emptyForm = { nom_service: '', description: '', tarif: '', disponibilite: 
 
 function ValidationsAdmin() {
   const [aValider, setAValider] = useState([])
+  const [meta, setMeta] = useState(null)
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [modalPrestataire, setModalPrestataire] = useState(null)
   const [form, setForm] = useState(emptyForm)
@@ -45,11 +48,21 @@ function ValidationsAdmin() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    apiGetAdminDashboard().then((res) => {
-      if (res.ok) setAValider(res.data.a_valider)
+    setLoading(true)
+    apiGetAdminDashboard(page).then((res) => {
+      if (res.ok) {
+        const av = res.data.a_valider
+        setAValider(av?.data ?? [])
+        setMeta(av ? {
+          current_page: av.current_page,
+          last_page: av.last_page,
+          total: av.total,
+          per_page: av.per_page,
+        } : null)
+      }
       setLoading(false)
     })
-  }, [])
+  }, [page])
 
   function openModal(prestataire) {
     setModalPrestataire(prestataire)
@@ -102,7 +115,7 @@ function ValidationsAdmin() {
       active="Validations"
       title="Validations"
       subtitle="Prestataires en attente : validez leur profil et publiez leur première annonce"
-      validationsCount={aValider.length}
+      validationsCount={meta?.total ?? aValider.length}
     >
       <div className="bg-white rounded-2xl p-6 border border-gray-100">
         <div className="overflow-x-auto">
@@ -159,6 +172,7 @@ function ValidationsAdmin() {
             </tbody>
           </table>
         </div>
+        <Pagination meta={meta} onPageChange={setPage} />
       </div>
 
       {modalPrestataire && (

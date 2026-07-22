@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../components/AdminLayout'
+import Pagination from '../components/Pagination'
 import { apiGetAdminMissions } from '../services/api'
 
 function relativeTime(dateStr) {
@@ -33,16 +34,28 @@ const statutLabels = {
 
 function MissionsAdmin() {
   const [missions, setMissions] = useState([])
+  const [meta, setMeta]         = useState(null)
+  const [page, setPage]         = useState(1)
   const [loading, setLoading]   = useState(true)
   const [search, setSearch]     = useState('')
   const [filterStatut, setFilterStatut] = useState('tous')
 
   useEffect(() => {
-    apiGetAdminMissions().then((res) => {
-      if (res.ok) setMissions(Array.isArray(res.data) ? res.data : res.data.data ?? [])
+    setLoading(true)
+    apiGetAdminMissions(page).then((res) => {
+      if (res.ok) {
+        const payload = res.data
+        setMissions(Array.isArray(payload) ? payload : payload.data ?? [])
+        setMeta(Array.isArray(payload) ? null : {
+          current_page: payload.current_page,
+          last_page: payload.last_page,
+          total: payload.total,
+          per_page: payload.per_page,
+        })
+      }
       setLoading(false)
     })
-  }, [])
+  }, [page])
 
   const filtered = missions.filter((m) => {
     const q = search.toLowerCase()
@@ -93,7 +106,7 @@ function MissionsAdmin() {
             {s === 'tous' ? 'Toutes' : statutLabels[s]}
             <span className="ml-1.5 opacity-60 text-xs">
               {s === 'tous'
-                ? missions.length
+                ? meta?.total ?? missions.length
                 : missions.filter((m) => m.statut === s).length}
             </span>
           </button>
@@ -140,6 +153,7 @@ function MissionsAdmin() {
             </tbody>
           </table>
         </div>
+        <Pagination meta={meta} onPageChange={setPage} />
       </div>
     </AdminLayout>
   )
