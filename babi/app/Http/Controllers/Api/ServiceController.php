@@ -3,87 +3,35 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Mail\AnnoncePublieeMail;
-use App\Models\Service;
 use App\Http\Requests\Service\StoreServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
+use App\Http\Resources\ServiceResource;
+use App\Models\Service;
 
 class ServiceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return response()->json(Service::with(['prestataire', 'categorie'])->get());
+        $services = Service::with('categorie')->get();
+        return ServiceResource::collection($services);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreServiceRequest $request)
     {
-        $data = $request->validated();
-
-        if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            $uploadDir = public_path('uploads/services');
-            File::ensureDirectoryExists($uploadDir);
-            $filename = time() . '_' . Str::random(8) . '.' . $photo->getClientOriginalExtension();
-            $photo->move($uploadDir, $filename);
-            $data['photo_path'] = asset('uploads/services/' . $filename);
-        }
-
-        $service = Service::create($data);
-        $service->load(['prestataire', 'categorie']);
-
-        if ($service->prestataire?->email) {
-            Mail::to($service->prestataire->email)->send(new AnnoncePublieeMail($service));
-        }
-
-        return response()->json($service, 201);
+        $service = Service::create($request->validated());
+        return new ServiceResource($service);
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Service $service)
     {
-        $service = Service::with(['prestataire', 'categorie', 'reservations'])->findOrFail($id);
-        return response()->json($service);
+        return new ServiceResource($service->load('categorie'));
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateServiceRequest $request, string $id)
+    public function update(UpdateServiceRequest $request, Service $service)
     {
-        $service = Service::findOrFail($id);
-        $data = $request->validated();
-
-        if ($request->hasFile('photo')) {
-            $photo = $request->file('photo');
-            $uploadDir = public_path('uploads/services');
-            File::ensureDirectoryExists($uploadDir);
-            $filename = time() . '_' . Str::random(8) . '.' . $photo->getClientOriginalExtension();
-            $photo->move($uploadDir, $filename);
-            $data['photo_path'] = asset('uploads/services/' . $filename);
-        }
-
-        $service->update($data);
-        return response()->json($service);
+        $service->update($request->validated());
+        return new ServiceResource($service);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Service $service)
     {
-        $service = Service::findOrFail($id);
         $service->delete();
-        return response()->json(['message' => 'Service supprimé']);
+        return response()->json(['message' => 'Service supprimé avec succès']);
     }
 }

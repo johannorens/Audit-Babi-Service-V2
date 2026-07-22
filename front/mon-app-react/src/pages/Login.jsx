@@ -200,16 +200,6 @@ function Login() {
               {loading ? "Connexion..." : "Se connecter"}
             </button>
 
-            {/* Bouton temporaire - audit Sentry, à retirer après test */}
-            <button
-              type="button"
-              onClick={() => {
-                throw new Error("Test audit Sentry front");
-              }}
-              className="w-full bg-red-100 text-red-700 font-bold py-2 rounded-2xl mt-2"
-            >
-              Test Sentry (debug)
-            </button>
           </form>
 
           <div className="flex items-center gap-3 my-6">

@@ -3,83 +3,63 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
 use App\Http\Requests\Reservation\StoreReservationRequest;
 use App\Http\Requests\Reservation\UpdateReservationRequest;
+use App\Http\Resources\ReservationResource;
+use App\Models\Reservation;
 use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        if (auth()->user()?->role === 'admin') {
-            return response()->json(
-                Reservation::with(['utilisateur', 'service.prestataire', 'avis'])
-                    ->orderByDesc('date_reservation')
-                    ->get()
-            );
+        $query = Reservation::with(['utilisateur', 'service', 'avis']);
+
+        if ($request->user()->role !== 'admin') {
+            $query->where('id_utilisateur', $request->user()->id_utilisateur);
         }
 
-        return response()->json(
-            Reservation::with(['utilisateur', 'service.prestataire', 'avis'])
-                ->where('id_utilisateur', auth()->id())
-                ->orderByDesc('date_reservation')
-                ->get()
-        );
+        return ReservationResource::collection($query->get());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreReservationRequest $request)
     {
-        
         $reservation = Reservation::create([
             ...$request->validated(),
-            'id_utilisateur' => auth()->id(),
-            'statut' => 'confirmee',
+            'id_utilisateur' => $request->user()->id_utilisateur,
         ]);
-        return response()->json($reservation, 201);
+
+        return new ReservationResource($reservation->load(['utilisateur', 'service']));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Request $request, Reservation $reservation)
     {
-        $reservation = Reservation::with(['utilisateur', 'service.prestataire', 'avis'])->findOrFail($id);
-        abort_if($reservation->id_utilisateur !== auth()->id(), 403);
-        return response()->json($reservation);
+        $this->authorizeOwnerOrAdmin($request, $reservation);
+
+        return new ReservationResource($reservation->load(['utilisateur', 'service', 'avis']));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateReservationRequest $request, string $id)
+    public function update(UpdateReservationRequest $request, Reservation $reservation)
     {
-        $reservation = Reservation::findOrFail($id);
+        $this->authorizeOwnerOrAdmin($request, $reservation);
 
-        if (auth()->user()?->role === 'admin') {
-            $reservation->update($request->validated());
-            return response()->json($reservation->fresh());
-        }
-
-        abort_if($reservation->id_utilisateur !== auth()->id(), 403);
-        $reservation->update($request->safe()->except('id_utilisateur'));
-        return response()->json($reservation);
+        $reservation->update($request->validated());
+        return new ReservationResource($reservation->load(['utilisateur', 'service']));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Request $request, Reservation $reservation)
     {
-        $reservation = Reservation::findOrFail($id);
-        abort_if($reservation->id_utilisateur !== auth()->id(), 403);
+        $this->authorizeOwnerOrAdmin($request, $reservation);
+
         $reservation->delete();
-        return response()->json(['message' => 'Réservation supprimée']);
+        return response()->json(['message' => 'Réservation supprimée avec succès']);
+    }
+
+    private function authorizeOwnerOrAdmin(Request $request, Reservation $reservation): void
+    {
+        if ($request->user()->role !== 'admin'
+            && $reservation->id_utilisateur !== $request->user()->id_utilisateur) {
+            abort(403, "Vous n'êtes pas autorisé à accéder à cette réservation.");
+        }
     }
 }

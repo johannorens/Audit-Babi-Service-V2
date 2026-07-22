@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\PrestaireController;
+use App\Http\Controllers\Api\PrestataireController;
 use App\Http\Controllers\Api\CategorieController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\ReservationController;
@@ -24,15 +24,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('avis/{id}/signaler', [AvisController::class, 'signaler']);
 });
 
-Route::apiResource('prestataires', PrestaireController::class)->only(['index', 'show']);
-Route::post('prestataires/candidature', [PrestaireController::class, 'candidater']);
-Route::apiResource('categories', CategorieController::class)->only(['index', 'show']);
+Route::apiResource('prestataires', PrestataireController::class)->only(['index', 'show']);
+Route::post('prestataires/candidature', [PrestataireController::class, 'candidater']);
+Route::apiResource('categories', CategorieController::class)
+    ->only(['index', 'show'])
+    ->parameters(['categories' => 'categorie']);
 Route::apiResource('services',   ServiceController::class)->only(['index', 'show']);
 Route::get('services/{id}/avis', [AvisController::class, 'parService']);
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    Route::apiResource('prestataires', PrestaireController::class)->only(['store', 'update', 'destroy']);
-    Route::apiResource('categories',   CategorieController::class)->only(['store', 'update', 'destroy']);
+    Route::apiResource('prestataires', PrestataireController::class)->only(['store', 'update', 'destroy']);
+  Route::apiResource('categories', CategorieController::class)
+    ->only(['store', 'update', 'destroy'])
+    ->parameters(['categories' => 'categorie']);
     Route::apiResource('services',     ServiceController::class)->only(['store', 'update', 'destroy']);
 
     Route::prefix('admin')->group(function () {
