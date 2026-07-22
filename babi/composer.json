@@ -76,11 +76,17 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": []
-        }
-    },
+   "extra": {
+    "laravel": {
+"dont-discover": [
+    "laravel/pail",
+    "laravel/pao",
+    "laravel/sentinel",
+    "laravel/telescope",
+    "nunomaduro/collision"
+]
+    }
+},
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
