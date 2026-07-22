@@ -6,7 +6,10 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'https://audit-babi-service-v2-production.up.railway.app',
+    ],
 
     'allowed_origins_patterns' => [],
 
